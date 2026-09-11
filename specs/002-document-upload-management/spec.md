@@ -114,7 +114,7 @@ An administrator reviews document activity and usage patterns to support account
 - **FR-004**: The system MUST require a document title and one of the predefined categories: Project Documents, Team Resources, Personal Files, Reports, Presentations, or Other.
 - **FR-005**: The system MUST allow an optional description, project association, and custom tags.
 - **FR-006**: The system MUST record upload time, uploader, file size, and file type for every accepted document.
-- **FR-007**: The system MUST check each file for viruses and malware before making it available.
+- **FR-007**: The system MUST place each uploaded file in a quarantined state, enqueue a virus-scan job, and make the file available only after an asynchronous scan reports it clean.
 - **FR-008**: The system MUST store accepted files outside publicly accessible web content and MUST protect them with authorization checks for every access path.
 - **FR-009**: The system MUST use a unique non-user-supplied storage identity for each file and MUST complete file storage before recording the document as available.
 - **FR-010**: Employees MUST be able to view their own uploaded documents with title, category, upload date, file size, and project information.
@@ -135,10 +135,12 @@ An administrator reviews document activity and usage patterns to support account
 - **FR-025**: Core document upload, browse, search, and management functions MUST work without a cloud service or internet connection in the training environment.
 - **FR-026**: The feature MUST preserve the existing mock authentication model and existing application workflows.
 - **FR-027**: The initial release MUST exclude collaborative editing, version history, approval workflows, external storage integrations, mobile apps, templates, storage quotas, and recoverable trash.
+- **FR-028**: The scan job processor MUST retry transient failures, move repeatedly failing jobs to a poison/dead-letter path for operator review, and fail closed so quarantined files are never exposed while scan status is unknown.
 
 ### Key Entities
 
 - **Document**: A work file and its metadata, including title, description, category, tags, project context, type, size, owner, and timestamps.
+- **Document Scan Job**: A queued request to scan one quarantined document, including a stable job identifier, document identifier, storage path, attempt information, and status.
 - **Document Share**: A permission relationship between a document and a specific user or team, including its recipient and sharing context.
 - **Document Activity**: An audit record of an upload, download, preview, share, edit, replacement, or deletion, including actor, document, action, and time.
 - **Project Document Association**: The relationship connecting a document to a project and governing project-member access.
@@ -149,7 +151,7 @@ An administrator reviews document activity and usage patterns to support account
 
 ### Measurable Outcomes
 
-- **SC-001**: At least 95% of valid uploads of files up to 25 MB complete or report a clear result within 30 seconds under typical training-environment conditions.
+- **SC-001**: At least 95% of valid uploads of files up to 25 MB complete the initial upload and report that the document is queued for scanning within 30 seconds under typical training-environment conditions.
 - **SC-002**: At least 95% of document list views containing up to 500 authorized documents display within 2 seconds.
 - **SC-003**: At least 95% of ordinary document searches return authorized results within 2 seconds.
 - **SC-004**: At least 95% of common PDF and image previews become available within 3 seconds when the user is authorized.
@@ -159,6 +161,7 @@ An administrator reviews document activity and usage patterns to support account
 - **SC-008**: At least 90% of uploaded documents have one of the required categories.
 - **SC-009**: In authorization testing, zero unauthorized document views, downloads, edits, shares, or deletions are successful.
 - **SC-010**: Every tested upload, download, share, replacement, and deletion produces a corresponding auditable activity record.
+- **SC-011**: In scan processing tests, transient failures are retried, poison jobs are isolated for review, and no document with an unknown or failed scan status can be previewed or downloaded.
 
 ## Assumptions
 
@@ -168,6 +171,7 @@ An administrator reviews document activity and usage patterns to support account
 - Existing projects, tasks, teams, users, and notifications provide the context needed for associations and alerts.
 - Permanent deletion is intended for the initial release; recovery and trash are out of scope.
 - Virus and malware checking is available as an acceptance requirement in the target environment; behavior when the checker is unavailable is to fail closed.
+- In offline mode, the queue and scanner use local implementations; Azure Queue Storage and an Azure Function are optional deployment replacements, not requirements for local training.
 - Document content indexing is not required; search is based on title, description, tags, uploader, and project metadata.
 
 ## Out of Scope
