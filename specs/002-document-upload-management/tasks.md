@@ -47,10 +47,11 @@
 - [ ] T014 [US1] Implement upload validation for the 25 MB limit, supported extension/MIME allowlist, required title/category, optional metadata, project membership, and task/project consistency in `ContosoDashboard/Services/DocumentService.cs`.
 - [ ] T015 [US1] Implement the ordered upload workflow in `ContosoDashboard/Services/DocumentService.cs`: copy the browser stream, generate a unique quarantine path, save the file, persist `PendingScan` metadata and a stable scan job, enqueue the message, and clean up on partial failure.
 - [ ] T016 [US1] Add the shared scan-processing method in `ContosoDashboard/Services/DocumentService.cs` so local workers and Azure Functions can atomically apply idempotent clean, malicious, unavailable, retry, and poison outcomes without exposing non-available documents.
-- [ ] T017 [US1] Implement the multi-file upload form with `InputFile`, `@key` reset, metadata fields, progress/status messaging, per-file errors, and queued/available/rejected/unavailable states in `ContosoDashboard/Pages/Documents.razor`.
-- [ ] T018 [US1] Add authorized document list navigation and the upload entry point to `ContosoDashboard/Shared/NavMenu.razor` and `ContosoDashboard/Pages/Documents.razor`.
-- [ ] T019 [US1] Map authenticated download and preview endpoints that call the document service before opening storage streams, return safe filenames/MIME types, block all non-`Available` states, and record activity in `ContosoDashboard/Services/DocumentEndpoint.cs` and `ContosoDashboard/Program.cs`.
-- [ ] T020 [US1] Add document status, upload error, and protected delivery styling in `ContosoDashboard/wwwroot/css/site.css`.
+- [ ] T017 [US1] Implement `DocumentController` POST `/api/documents` in `ContosoDashboard/Controllers/DocumentController.cs`, delegating to `DocumentService` and returning clear validation errors for files over 25 MB or unsupported file types.
+- [ ] T018 [US1] Implement the multi-file upload form with `InputFile`, `@key` reset, metadata fields, progress/status messaging, per-file errors, and queued/available/rejected/unavailable states in `ContosoDashboard/Pages/Documents.razor`.
+- [ ] T019 [US1] Add authorized document list navigation and the upload entry point to `ContosoDashboard/Shared/NavMenu.razor` and `ContosoDashboard/Pages/Documents.razor`.
+- [ ] T020 [US1] Map authenticated download and preview endpoints that call the document service before opening storage streams, return safe filenames/MIME types, block all non-`Available` states, and record activity in `ContosoDashboard/Services/DocumentEndpoint.cs` and `ContosoDashboard/Program.cs`.
+- [ ] T021 [US1] Add document status, upload error, and protected delivery styling in `ContosoDashboard/wwwroot/css/site.css`.
 
 **Checkpoint**: A user can upload, observe scan status, and access only clean files without direct filesystem exposure.
 
@@ -64,12 +65,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Implement authorization predicates for owner, administrator, project manager, current project membership, explicit user share, and department share in `ContosoDashboard/Services/DocumentService.cs`.
-- [ ] T022 [US2] Implement paged authorized document queries with title/description/tag/uploader/project search, title/date/category/size sorting, category/project/date filters, and `Available`-only access in `ContosoDashboard/Services/DocumentService.cs`.
-- [ ] T023 [US2] Build the My Documents and Shared with Me browse/search/filter/sort UI with non-disclosing not-found behavior in `ContosoDashboard/Pages/Documents.razor` and `ContosoDashboard/Pages/DocumentDetails.razor`.
-- [ ] T024 [US2] Add project document loading and authorized download/preview links to `ContosoDashboard/Pages/ProjectDetails.razor`.
-- [ ] T025 [US2] Add query indexes and projection choices needed to meet the 500-document list and 2-second metadata-search targets in `ContosoDashboard/Data/ApplicationDbContext.cs` and `ContosoDashboard/Services/DocumentService.cs`.
-- [ ] T026 [US2] Record authorized Preview and Download activity and ensure the delivery endpoints recheck current identity, role, ownership, membership, and share permissions in `ContosoDashboard/Services/DocumentEndpoint.cs` and `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T022 [US2] Implement authorization predicates for owner, administrator, project manager, current project membership, explicit user share, and department share in `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T023 [US2] Implement paged authorized document queries with title/description/tag/uploader/project search, title/date/category/size sorting, category/project/date filters, and `Available`-only access in `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T024 [US2] Build the My Documents and Shared with Me browse/search/filter/sort UI with non-disclosing not-found behavior in `ContosoDashboard/Pages/Documents.razor` and `ContosoDashboard/Pages/DocumentDetails.razor`.
+- [ ] T025 [US2] Add project document loading and authorized download/preview links to `ContosoDashboard/Pages/ProjectDetails.razor`.
+- [ ] T026 [US2] Add query indexes and projection choices needed to meet the 500-document list and 2-second metadata-search targets in `ContosoDashboard/Data/ApplicationDbContext.cs` and `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T027 [US2] Record authorized Preview and Download activity and ensure the delivery endpoints recheck current identity, role, ownership, membership, and share permissions in `ContosoDashboard/Services/DocumentEndpoint.cs` and `ContosoDashboard/Services/DocumentService.cs`.
 
 **Checkpoint**: Authorized users can find and retrieve clean documents while unauthorized users receive no protected document details.
 
@@ -83,11 +84,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Implement duplicate-safe share creation, exactly-one recipient validation, owner/project-manager authorization, and current access reevaluation in `ContosoDashboard/Services/DocumentService.cs`.
-- [ ] T028 [US3] Create document-share notifications using existing notification types and recipient preferences in `ContosoDashboard/Services/NotificationService.cs` and `ContosoDashboard/Models/Notification.cs`.
-- [ ] T029 [US3] Notify eligible project members after a document becomes `Available` for a project and avoid duplicate notifications on repeated scan delivery in `ContosoDashboard/Services/DocumentService.cs`.
-- [ ] T030 [US3] Add share-user/team controls, recipient selection, validation messages, and share history/status to `ContosoDashboard/Pages/DocumentDetails.razor`.
-- [ ] T031 [US3] Add project document counts and available-document sections to `ContosoDashboard/Pages/ProjectDetails.razor`.
+- [ ] T028 [US3] Implement duplicate-safe share creation, exactly-one recipient validation, owner/project-manager authorization, and current access reevaluation in `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T029 [US3] Create document-share notifications using existing notification types and recipient preferences in `ContosoDashboard/Services/NotificationService.cs` and `ContosoDashboard/Models/Notification.cs`.
+- [ ] T030 [US3] Notify eligible project members after a document becomes `Available` for a project and avoid duplicate notifications on repeated scan delivery in `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T031 [US3] Add share-user/team controls, recipient selection, validation messages, and share history/status to `ContosoDashboard/Pages/DocumentDetails.razor`.
+- [ ] T032 [US3] Add project document counts and available-document sections to `ContosoDashboard/Pages/ProjectDetails.razor`.
 
 **Checkpoint**: Authorized sharing and project collaboration work through notifications and current access rules.
 
@@ -99,13 +100,13 @@
 
 **Independent Test**: An owner updates metadata, replaces a file through a new scan, deletes a document after confirmation, and accesses authorized documents from dashboard/project/task views.
 
-- [ ] T032 [US4] Implement owner/project-manager authorization for metadata edits, safe replacement with pending-scan retention of the currently available file, and cleanup of rejected/old files in `ContosoDashboard/Services/DocumentService.cs`.
-- [ ] T033 [US4] Implement permanent deletion with confirmation semantics, stored-file cleanup, audit preservation, and non-disclosing authorization failures in `ContosoDashboard/Services/DocumentService.cs`.
-- [ ] T034 [US4] Add metadata edit, file replacement, delete confirmation, and status transition UI to `ContosoDashboard/Pages/DocumentDetails.razor`.
-- [ ] T035 [US4] Add recent-five documents and document-count queries to `ContosoDashboard/Services/DashboardService.cs` and extend `DashboardSummary`.
-- [ ] T036 [US4] Add the Recent Documents widget, document summary card, and links to `ContosoDashboard/Pages/Index.razor`.
-- [ ] T037 [US4] Add task-document associations with task project inheritance, authorized attach/list controls, and task detail navigation in `ContosoDashboard/Models/TaskItem.cs`, `ContosoDashboard/Services/TaskService.cs`, and `ContosoDashboard/Pages/TaskDetails.razor`.
-- [ ] T038 [US4] Add project and task document association display and upload context handling to `ContosoDashboard/Pages/ProjectDetails.razor` and `ContosoDashboard/Pages/TaskDetails.razor`.
+- [ ] T033 [US4] Implement owner/project-manager authorization for metadata edits, safe replacement with pending-scan retention of the currently available file, and cleanup of rejected/old files in `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T034 [US4] Implement permanent deletion with confirmation semantics, stored-file cleanup, audit preservation, and non-disclosing authorization failures in `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T035 [US4] Add metadata edit, file replacement, delete confirmation, and status transition UI to `ContosoDashboard/Pages/DocumentDetails.razor`.
+- [ ] T036 [US4] Add recent-five documents and document-count queries to `ContosoDashboard/Services/DashboardService.cs` and extend `DashboardSummary`.
+- [ ] T037 [US4] Add the Recent Documents widget, document summary card, and links to `ContosoDashboard/Pages/Index.razor`.
+- [ ] T038 [US4] Add task-document associations with task project inheritance, authorized attach/list controls, and task detail navigation in `ContosoDashboard/Models/TaskItem.cs`, `ContosoDashboard/Services/TaskService.cs`, and `ContosoDashboard/Pages/TaskDetails.razor`.
+- [ ] T039 [US4] Add project and task document association display and upload context handling to `ContosoDashboard/Pages/ProjectDetails.razor` and `ContosoDashboard/Pages/TaskDetails.razor`.
 
 **Checkpoint**: Authorized lifecycle management and dashboard/task/project context are complete without exposing pending or unauthorized files.
 
@@ -117,10 +118,10 @@
 
 **Independent Test**: Perform upload, scan, preview, download, share, edit, replace, and delete actions, then verify administrator reports contain actor/document/time and usage summaries while non-administrators are denied.
 
-- [ ] T039 [US5] Complete immutable activity recording for upload, scan outcome, preview, download, share, edit, replacement, and deletion in `ContosoDashboard/Services/DocumentService.cs` and `ContosoDashboard/Models/DocumentActivity.cs`.
-- [ ] T040 [US5] Implement administrator-only document activity, type, uploader, and access-pattern report queries in `ContosoDashboard/Services/DocumentService.cs`.
-- [ ] T041 [US5] Add the administrator document reporting page with period/scope filters and non-administrator denial handling in `ContosoDashboard/Pages/DocumentReports.razor`.
-- [ ] T042 [US5] Add audit indexes and report projections for document/action/time access patterns in `ContosoDashboard/Data/ApplicationDbContext.cs`.
+- [ ] T040 [US5] Complete immutable activity recording for upload, scan outcome, preview, download, share, edit, replacement, and deletion in `ContosoDashboard/Services/DocumentService.cs` and `ContosoDashboard/Models/DocumentActivity.cs`.
+- [ ] T041 [US5] Implement administrator-only document activity, type, uploader, and access-pattern report queries in `ContosoDashboard/Services/DocumentService.cs`.
+- [ ] T042 [US5] Add the administrator document reporting page with period/scope filters and non-administrator denial handling in `ContosoDashboard/Pages/DocumentReports.razor`.
+- [ ] T043 [US5] Add audit indexes and report projections for document/action/time access patterns in `ContosoDashboard/Data/ApplicationDbContext.cs`.
 
 **Checkpoint**: Administrators can audit document behavior without exposing reporting capabilities to other roles.
 
@@ -130,12 +131,12 @@
 
 **Purpose**: Replace the local queue worker with an Azure Queue Storage-triggered Function without changing document business logic.
 
-- [ ] T043 [P] Implement the isolated-process Queue Storage trigger, message deserialization, and call to the shared scan-processing contract in `ContosoDashboard.DocumentScanFunction/DocumentScanFunction.cs`.
-- [ ] T044 [P] Configure Functions host v4, Queue Storage retry/visibility settings, poison-queue behavior, and non-secret local settings in `ContosoDashboard.DocumentScanFunction/host.json` and `ContosoDashboard.DocumentScanFunction/local.settings.json`.
-- [ ] T045 Implement Azure Queue Storage queue access using managed identity/configuration and stable `DocumentScanMessage` serialization in `ContosoDashboard/Services/AzureDocumentScanQueue.cs`.
-- [ ] T046 Add the Azure Function project to `ContosoDashboard.sln` or the repository build configuration and document the isolated .NET runtime/queue trigger setup in `ContosoDashboard.DocumentScanFunction/README.md`.
-- [ ] T047 Add Application Insights scan outcome, latency, retry, and poison-job telemetry without logging file contents in `ContosoDashboard.DocumentScanFunction/DocumentScanFunction.cs`.
-- [ ] T048 Document Flex Consumption (FC1), authenticated non-anonymous access, managed identity, private endpoint/network restrictions, and deployment configuration in `specs/002-document-upload-management/quickstart.md` and `ContosoDashboard.DocumentScanFunction/README.md`.
+- [ ] T044 [P] Implement the isolated-process Queue Storage trigger, message deserialization, and call to the shared scan-processing contract in `ContosoDashboard.DocumentScanFunction/DocumentScanFunction.cs`.
+- [ ] T045 [P] Configure Functions host v4, Queue Storage retry/visibility settings, poison-queue behavior, and non-secret local settings in `ContosoDashboard.DocumentScanFunction/host.json` and `ContosoDashboard.DocumentScanFunction/local.settings.json`.
+- [ ] T046 Implement Azure Queue Storage queue access using managed identity/configuration and stable `DocumentScanMessage` serialization in `ContosoDashboard/Services/AzureDocumentScanQueue.cs`.
+- [ ] T047 Add the Azure Function project to `ContosoDashboard.sln` or the repository build configuration and document the isolated .NET runtime/queue trigger setup in `ContosoDashboard.DocumentScanFunction/README.md`.
+- [ ] T048 Add Application Insights scan outcome, latency, retry, and poison-job telemetry without logging file contents in `ContosoDashboard.DocumentScanFunction/DocumentScanFunction.cs`.
+- [ ] T049 Document Flex Consumption (FC1), authenticated non-anonymous access, managed identity, private endpoint/network restrictions, and deployment configuration in `specs/002-document-upload-management/quickstart.md` and `ContosoDashboard.DocumentScanFunction/README.md`.
 
 **Checkpoint**: The optional Azure Function consumes the same queued job contract, is idempotent, fails closed, and can be deployed without weakening the offline implementation.
 
@@ -145,11 +146,11 @@
 
 **Purpose**: Validate security, performance, failure recovery, and documentation across the complete feature.
 
-- [ ] T049 [P] Add focused authorization, path-traversal, MIME/size validation, scan-state, queue retry, poison-message, and cleanup coverage in the repository's established test location or `ContosoDashboard.Tests/` if created by the implementation.
-- [ ] T050 [P] Add database initialization/migration handling and clean-state guidance for the new document tables in `ContosoDashboard/Data/ApplicationDbContext.cs` and `specs/002-document-upload-management/quickstart.md`.
-- [ ] T051 Run the complete acceptance, performance, and security scenarios from `specs/002-document-upload-management/quickstart.md`, including 25 MB upload, 500-document list/search, preview timing, direct endpoint denial, duplicate queue delivery, and orphan cleanup.
-- [ ] T052 Review all document-facing services and endpoints for current identity, role, owner, project membership, share, and scan-state checks; update `README.md` with the offline/Azure scanning boundary and training-only limitations.
-- [ ] T053 Run `dotnet build` from `ContosoDashboard/` and resolve feature-related compile/configuration errors without changing unrelated behavior.
+- [ ] T050 [P] Add focused authorization, path-traversal, MIME/size validation, scan-state, queue retry, poison-message, and cleanup coverage in the repository's established test location or `ContosoDashboard.Tests/` if created by the implementation.
+- [ ] T051 [P] Add database initialization/migration handling and clean-state guidance for the new document tables in `ContosoDashboard/Data/ApplicationDbContext.cs` and `specs/002-document-upload-management/quickstart.md`.
+- [ ] T052 Run the complete acceptance, performance, and security scenarios from `specs/002-document-upload-management/quickstart.md`, including 25 MB upload, 500-document list/search, preview timing, direct endpoint denial, duplicate queue delivery, and orphan cleanup.
+- [ ] T053 Review all document-facing services and endpoints for current identity, role, owner, project membership, share, and scan-state checks; update `README.md` with the offline/Azure scanning boundary and training-only limitations.
+- [ ] T054 Run `dotnet build` from `ContosoDashboard/` and resolve feature-related compile/configuration errors without changing unrelated behavior.
 
 ---
 
@@ -160,13 +161,13 @@
 - **Setup (Phase 1)**: No dependencies; T001-T004 can begin immediately.
 - **Foundational (Phase 2)**: Depends on Setup; blocks all user-story work. T005-T013 establish the shared model, storage, queue, scanner, worker, and DI boundaries.
 - **User Stories (Phases 3-7)**: Depend on Phase 2. US1 is the MVP; US2 depends on the document lifecycle from US1; US3 depends on authorized document queries from US2; US4 depends on the document lifecycle and associations; US5 depends on activity records from US1-US4.
-- **Azure Queue Scan Worker (Phase 8)**: Depends on T008, T011, T016, and T045's shared contract; can proceed in parallel with UI story work after the scan-processing contract exists.
+- **Azure Queue Scan Worker (Phase 8)**: Depends on T008, T011, T016, and T046's shared contract; can proceed in parallel with UI story work after the scan-processing contract exists.
 - **Polish (Phase 9)**: Depends on all selected story phases and the optional Azure path if Azure deployment is in scope.
 
 ### User Story Dependencies
 
 - **US1 (P1)**: Starts after Phase 2; MVP and scan-state foundation.
-- **US2 (P1)**: Starts after Phase 2, but requires the document entity/service from US1 for meaningful data; can parallelize UI/query work after T014-T016.
+- **US2 (P1)**: Starts after Phase 2, but requires the document entity/service from US1 for meaningful data; can parallelize UI/query work after T014-T017.
 - **US3 (P2)**: Depends on US2 authorization predicates and available-document queries.
 - **US4 (P2)**: Depends on US1 lifecycle operations and the US2/US3 authorization model; dashboard work can proceed after T035.
 - **US5 (P3)**: Depends on activity creation paths from US1-US4.
@@ -176,19 +177,19 @@
 
 - Setup T002-T004 can run in parallel after T001 configuration decisions are agreed.
 - Foundational T006, T008, T010, and T013 can run in parallel; T009 and T011 follow the contracts.
-- After T005-T013, US1 UI (T017-T020), US2 query/UI (T021-T025), and Azure Function scaffold (T043-T044) can proceed in parallel where developers avoid the same-file tasks.
-- Within US3, notification work (T028-T029) and sharing UI (T030) can proceed in parallel after T027.
-- Within US4, dashboard work (T035-T036) can proceed in parallel with lifecycle UI (T032-T034) and task integration (T037-T038).
-- Azure Function deployment/configuration tasks T043, T044, and T047 can proceed in parallel after the shared contracts are stable.
+- After T005-T013, US1 UI (T018-T021), US2 query/UI (T022-T026), and Azure Function scaffold (T044-T045) can proceed in parallel where developers avoid the same-file tasks.
+- Within US3, notification work (T029-T030) and sharing UI (T031) can proceed in parallel after T028.
+- Within US4, dashboard work (T036-T037) can proceed in parallel with lifecycle UI (T033-T035) and task integration (T038-T039).
+- Azure Function deployment/configuration tasks T044, T045, and T048 can proceed in parallel after the shared contracts are stable.
 
 ## Parallel Example: User Story 1
 
 ```text
-After T014-T016 establish the upload and scan-processing service:
+After T014-T017 establish the upload, controller, and scan-processing service:
 
-Task: T017 Build the Blazor upload form in ContosoDashboard/Pages/Documents.razor
-Task: T019 Add protected download/preview endpoints in ContosoDashboard/Services/DocumentEndpoint.cs
-Task: T020 Add scan/upload status styling in ContosoDashboard/wwwroot/css/site.css
+Task: T018 Build the Blazor upload form in ContosoDashboard/Pages/Documents.razor
+Task: T020 Add protected download/preview endpoints in ContosoDashboard/Services/DocumentEndpoint.cs
+Task: T021 Add scan/upload status styling in ContosoDashboard/wwwroot/css/site.css
 ```
 
 ## Parallel Example: Azure Scan Worker
@@ -196,9 +197,9 @@ Task: T020 Add scan/upload status styling in ContosoDashboard/wwwroot/css/site.c
 ```text
 After T008, T011, and T016 establish the shared queue/scan contract:
 
-Task: T043 Implement the Queue Storage-triggered Function in ContosoDashboard.DocumentScanFunction/DocumentScanFunction.cs
-Task: T044 Configure host retries and poison behavior in ContosoDashboard.DocumentScanFunction/host.json
-Task: T047 Add Application Insights telemetry in ContosoDashboard.DocumentScanFunction/DocumentScanFunction.cs
+Task: T044 Implement the Queue Storage-triggered Function in ContosoDashboard.DocumentScanFunction/DocumentScanFunction.cs
+Task: T045 Configure host retries and poison behavior in ContosoDashboard.DocumentScanFunction/host.json
+Task: T048 Add Application Insights telemetry in ContosoDashboard.DocumentScanFunction/DocumentScanFunction.cs
 ```
 
 ## Implementation Strategy
