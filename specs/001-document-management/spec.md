@@ -5,6 +5,10 @@
 **Status**: Draft  
 **Input**: User description: "StakeholderDocs/document-upload-and-management-feature.md"
 
+This feature enables employees to upload work-related documents, organize them by category and project, share them with teammates, and search for them quickly from the dashboard. It is intended for all 5,000 Contoso employees and must preserve role-based security, performance expectations, and operational visibility across the current application.
+
+**Target Users**: All Contoso employees with role-based access across Employee, Team Lead, Project Manager, and Administrator roles.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Upload and organize a document for work (Priority: P1)
@@ -87,8 +91,11 @@ Users and administrators need to see the recent documents relevant to them and u
 - **FR-011**: The system MUST show recent document activity in the dashboard and present associated documents in the relevant project and task views.
 - **FR-012**: The system MUST support project-level document visibility so teammates can access documents tied to their project when authorized.
 - **FR-013**: The system MUST maintain audit-friendly activity records for document uploads, access, edits, shares, and deletions.
-- **FR-014**: The system MUST remain usable in an offline training environment without cloud services and preserve a clear path to future cloud-backed storage.
-- **FR-015**: The system MUST provide a consistent user experience that supports efficient upload, search, preview or download, and management within the current dashboard application.
+- **FR-014**: The system MUST provide secure storage and transport protections consistent with the current product requirements, including Azure Blob Storage, encrypted-at-rest storage, TLS 1.3 in transit, RBAC enforcement, and malware scanning before documents are accepted for use.
+- **FR-015**: The system MUST support the current ASP.NET Core dashboard architecture and Entra ID-based identity model without requiring a major rewrite of the application.
+- **FR-016**: The system MUST remain usable in an offline training environment without cloud services while preserving a clear migration path to Azure-backed storage and cloud operations.
+- **FR-017**: The system MUST provide a consistent user experience that supports efficient upload, search, preview or download, and management within the current dashboard application.
+- **FR-018**: The system MUST operate within the planned 8-10 week delivery timeline and exclude version history, soft-delete workflows, collaborative editing, external integrations, and mobile app support from the initial scope.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -97,6 +104,7 @@ Users and administrators need to see the recent documents relevant to them and u
 - **Project**: Represents the work context to which a document may be associated and from which project team members may gain access.
 - **Document Share**: Represents a relationship between a document and a user or team that grants access to the file and triggers notifications.
 - **Activity Log**: Represents the audit trail for key document actions such as upload, download, edit, share, and deletion.
+- **Security Policy**: Represents the rules that enforce malware scanning, RBAC checks, and access validation before a document is stored or downloaded.
 
 ## Success Criteria *(mandatory)*
 
