@@ -17,6 +17,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<Notification> Notifications { get; set; } = null!;
     public DbSet<ProjectMember> ProjectMembers { get; set; } = null!;
     public DbSet<Announcement> Announcements { get; set; } = null!;
+    public DbSet<Document> Documents { get; set; } = null!;
+    public DbSet<DocumentShare> DocumentShares { get; set; } = null!;
+    public DbSet<DocumentActivity> DocumentActivities { get; set; } = null!;
+    public DbSet<DocumentScanJob> DocumentScanJobs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,6 +67,27 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
+
+        modelBuilder.Entity<Document>()
+            .HasOne(d => d.UploadedByUser).WithMany(u => u.UploadedDocuments)
+            .HasForeignKey(d => d.UploadedByUserId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Document>().HasOne(d => d.Project).WithMany(p => p.Documents)
+            .HasForeignKey(d => d.ProjectId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Document>().HasOne(d => d.Task).WithMany(t => t.Documents)
+            .HasForeignKey(d => d.TaskId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Document>().HasOne(d => d.ScanJob).WithOne(j => j.Document)
+            .HasForeignKey<DocumentScanJob>(j => j.DocumentId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<DocumentShare>().HasOne(s => s.SharedWithUser).WithMany(u => u.ReceivedDocumentShares)
+            .HasForeignKey(s => s.SharedWithUserId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<DocumentShare>().HasOne(s => s.SharedByUser).WithMany(u => u.CreatedDocumentShares)
+            .HasForeignKey(s => s.SharedByUserId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<DocumentActivity>().HasOne(a => a.User).WithMany(u => u.DocumentActivities)
+            .HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Document>().HasIndex(d => new { d.UploadedByUserId, d.UploadedDate });
+        modelBuilder.Entity<Document>().HasIndex(d => new { d.ProjectId, d.ScanStatus });
+        modelBuilder.Entity<Document>().HasIndex(d => new { d.ScanStatus, d.ScanJobId }).IsUnique();
+        modelBuilder.Entity<DocumentShare>().HasIndex(s => new { s.DocumentId, s.SharedWithUserId, s.SharedWithDepartment });
+        modelBuilder.Entity<DocumentActivity>().HasIndex(a => new { a.DocumentId, a.CreatedDate });
 
         // Seed initial data
         SeedData(modelBuilder);

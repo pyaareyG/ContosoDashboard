@@ -1,0 +1,19 @@
+@page "/tasks/{TaskId:int}"
+@attribute [Authorize]
+@using System.Security.Claims
+@inject ITaskService TaskService
+@inject IDocumentService DocumentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Task Documents - ContosoDashboard</PageTitle>
+<div class="container-fluid"><h1>@task?.Title</h1>@if (task is null) { <p>Task not found.</p> } else { <h3>Related Documents</h3>@if (documents.Count == 0) { <p class="text-muted">No related documents.</p> } else { <div class="list-group">@foreach (var document in documents) { <a class="list-group-item" href="/documents/@document.DocumentId">@document.Title</a> }</div> } }</div>
+
+@code {
+    [Parameter] public int TaskId { get; set; }
+    private TaskItem? task; private List<Document> documents = new();
+    protected override async Task OnParametersSetAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync(); if (!int.TryParse(state.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return;
+        task = await TaskService.GetTaskByIdAsync(TaskId, userId); if (task?.ProjectId is int projectId) documents = await DocumentService.SearchAsync(userId, new DocumentQuery { ProjectId = projectId });
+    }
+}

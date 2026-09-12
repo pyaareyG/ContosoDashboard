@@ -1,0 +1,16 @@
+@page "/document-reports"
+@attribute [Authorize(Roles = "Administrator")]
+@using Microsoft.EntityFrameworkCore
+@inject ContosoDashboard.Data.ApplicationDbContext DbContext
+
+<PageTitle>Document Reports - ContosoDashboard</PageTitle>
+<div class="container-fluid"><h1>Document Reports</h1><div class="row"><div class="col-md-4"><h5>By type</h5>@foreach (var item in byType) { <p>@item.Key: @item.Value</p> }</div><div class="col-md-4"><h5>Most active uploaders</h5>@foreach (var item in byUploader) { <p>@item.Key: @item.Value</p> }</div><div class="col-md-4"><h5>Activity</h5><p>@activityCount recorded actions</p></div></div></div>
+@code {
+    private Dictionary<string, int> byType = new(); private Dictionary<string, int> byUploader = new(); private int activityCount;
+    protected override async Task OnInitializedAsync()
+    {
+        byType = await DbContext.Documents.GroupBy(d => d.FileType).ToDictionaryAsync(group => group.Key, group => group.Count());
+        byUploader = await DbContext.Documents.Include(d => d.UploadedByUser).GroupBy(d => d.UploadedByUser.DisplayName).ToDictionaryAsync(group => group.Key, group => group.Count());
+        activityCount = await DbContext.DocumentActivities.CountAsync();
+    }
+}

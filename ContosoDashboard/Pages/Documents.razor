@@ -1,0 +1,74 @@
+@page "/documents"
+@using System.Security.Claims
+@attribute [Authorize]
+@inject IDocumentService DocumentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Documents - ContosoDashboard</PageTitle>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Documents</h1>
+        <label class="btn btn-primary mb-0">
+            Upload files
+            <InputFile OnChange="SelectFiles" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" class="d-none" @key="inputKey" />
+        </label>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert @(isError ? "alert-danger" : "alert-info")">@message</div> }
+    <div class="row mb-3">
+        <div class="col-md-5"><input class="form-control" placeholder="Search documents" @bind="search" @bind:event="oninput" @bind:after="RefreshDocuments" /></div>
+        <div class="col-md-3"><select class="form-select" @bind="sortBy" @bind:after="RefreshDocuments"><option value="date">Upload date</option><option value="title">Title</option><option value="category">Category</option><option value="size">File size</option></select></div>
+    </div>
+    @if (documents is null) { <p><em>Loading...</em></p> }
+    else if (documents.Count == 0) { <p class="text-muted">No available documents.</p> }
+    else
+    {
+        <div class="table-responsive"><table class="table table-hover"><thead><tr><th>Title</th><th>Category</th><th>Project</th><th>Uploaded</th><th>Size</th><th></th></tr></thead><tbody>
+        @foreach (var document in documents)
+        {
+            <tr><td><a href="/documents/@document.DocumentId">@document.Title</a><br /><small class="text-muted">@document.OriginalFileName</small></td><td>@document.Category</td><td>@(document.Project?.Name ?? "Personal")</td><td>@document.UploadedDate.ToLocalTime().ToString("g")</td><td>@FormatSize(document.FileSize)</td><td><a class="btn btn-sm btn-outline-primary" href="/documents/@document.DocumentId/download">Download</a></td></tr>
+        }
+        </tbody></table></div>
+    }
+</div>
+
+@code {
+    private List<Document>? documents;
+    private string? search;
+    private string sortBy = "date";
+    private string message = string.Empty;
+    private bool isError;
+    private int currentUserId;
+    private int inputKey;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        int.TryParse(state.User.FindFirstValue(ClaimTypes.NameIdentifier), out currentUserId);
+        await LoadDocuments();
+    }
+
+    private async Task LoadDocuments() => documents = await DocumentService.SearchAsync(currentUserId, new DocumentQuery { Search = search, SortBy = sortBy });
+    private Task RefreshDocuments() => LoadDocuments();
+
+    private async Task SelectFiles(InputFileChangeEventArgs args)
+    {
+        message = string.Empty; isError = false;
+        foreach (var file in args.GetMultipleFiles(20))
+        {
+            try
+            {
+                var fileName = file.Name; var size = file.Size; var contentType = file.ContentType;
+                await using var source = file.OpenReadStream(25 * 1024 * 1024);
+                await using var copy = new MemoryStream();
+                await source.CopyToAsync(copy); copy.Position = 0;
+                await DocumentService.UploadAsync(currentUserId, Path.GetFileNameWithoutExtension(fileName), null, "Other", null, null, null, copy, fileName, contentType, size);
+                message = "Upload queued for virus scanning.";
+            }
+            catch (Exception exception) { isError = true; message = exception.Message; }
+        }
+        inputKey++; await LoadDocuments();
+    }
+
+    private static string FormatSize(long bytes) => bytes switch { >= 1024 * 1024 => $"{bytes / 1024d / 1024d:0.##} MB", >= 1024 => $"{bytes / 1024d:0.##} KB", _ => $"{bytes} B" };
+}

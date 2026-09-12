@@ -62,6 +62,10 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Runtime document storage
+ContosoDashboard/AppData/uploads/*
+!ContosoDashboard/AppData/uploads/.gitkeep
+
 # StyleCop
 StyleCopReport.xml
 

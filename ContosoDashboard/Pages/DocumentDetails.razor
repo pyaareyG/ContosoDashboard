@@ -1,0 +1,41 @@
+@page "/documents/{DocumentId:int}"
+@attribute [Authorize]
+@using System.Security.Claims
+@inject IDocumentService DocumentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<PageTitle>Document Details - ContosoDashboard</PageTitle>
+<div class="container-fluid">
+    @if (document is null) { <p><em>Document not found or unavailable.</em></p> }
+    else
+    {
+        <h1>@document.Title</h1>
+        <p class="text-muted">@document.OriginalFileName | @document.Category | @document.ScanStatus</p>
+        <p>@document.Description</p>
+        <div class="mb-4"><a class="btn btn-primary me-2" href="/documents/@document.DocumentId/download">Download</a><a class="btn btn-outline-primary" href="/documents/@document.DocumentId/preview" target="_blank">Preview</a></div>
+        @if (canManage)
+        {
+            <EditForm Model="editModel" OnValidSubmit="SaveMetadata"><DataAnnotationsValidator /><div class="mb-2"><label>Title</label><InputText class="form-control" @bind-Value="editModel.Title" /></div><div class="mb-2"><label>Description</label><InputTextArea class="form-control" @bind-Value="editModel.Description" /></div><div class="mb-2"><label>Category</label><InputSelect class="form-select" @bind-Value="editModel.Category">@foreach (var category in DocumentCategory.Values) { <option value="@category">@category</option> }</InputSelect></div><div class="mb-2"><label>Tags</label><InputText class="form-control" @bind-Value="editModel.Tags" /></div><button class="btn btn-secondary" type="submit">Save metadata</button> <button class="btn btn-danger" type="button" @onclick="Delete">Delete</button></EditForm>
+            <hr /><h3>Share</h3><div class="input-group mb-3"><InputNumber class="form-control" @bind-Value="recipientUserId" /><button class="btn btn-outline-primary" @onclick="ShareWithUser">Share with user</button></div>
+        }
+        @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
+    }
+</div>
+
+@code {
+    [Parameter] public int DocumentId { get; set; }
+    private Document? document; private bool canManage; private int currentUserId; private int? recipientUserId; private string message = string.Empty;
+    private EditModel editModel = new();
+    protected override async Task OnParametersSetAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync(); int.TryParse(state.User.FindFirstValue(ClaimTypes.NameIdentifier), out currentUserId);
+        document = await DocumentService.GetAuthorizedAsync(DocumentId, currentUserId); if (document is null) return;
+        canManage = document.UploadedByUserId == currentUserId || document.Project?.ProjectManagerId == currentUserId;
+        editModel = new EditModel { Title = document.Title, Description = document.Description, Category = document.Category, Tags = document.Tags };
+    }
+    private async Task SaveMetadata() { message = await DocumentService.UpdateMetadataAsync(DocumentId, currentUserId, editModel.Title, editModel.Description, editModel.Category, editModel.Tags) ? "Metadata saved." : "Unable to save metadata."; }
+    private async Task ShareWithUser() { message = await DocumentService.ShareAsync(DocumentId, currentUserId, recipientUserId, null) ? "Document shared." : "Unable to share document."; }
+    private async Task Delete() { if (await DocumentService.DeleteAsync(DocumentId, currentUserId)) NavigationManager.NavigateTo("/documents"); else message = "Unable to delete document."; }
+    private sealed class EditModel { public string Title { get; set; } = string.Empty; public string? Description { get; set; } public string Category { get; set; } = DocumentCategory.Values[0]; public string? Tags { get; set; } }
+}

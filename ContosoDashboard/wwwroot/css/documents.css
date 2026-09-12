@@ -1,0 +1,4 @@
+.document-status-pending { color: #8a5a00; }
+.document-status-rejected, .document-error { color: #a52834; }
+.document-status-available { color: #146c43; }
+.document-upload-progress { min-height: 2rem; }
